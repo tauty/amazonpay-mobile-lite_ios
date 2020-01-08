@@ -11,10 +11,27 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    
+    // Universal Linksにより起動されるメソッド.
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([Any]?) -> Void) -> Bool {
+        print("AppDelegate#application invoked by Universal Links")
+        
+        if userActivity.activityType == NSUserActivityTypeBrowsingWeb {
+            print(userActivity.webpageURL!)
+            // parse URL parameters
+            var urlParams = Dictionary<String, String>.init()
+            for param in userActivity.webpageURL!.query!.components(separatedBy: "&") {
+                let kv = param.components(separatedBy: "=")
+                urlParams[kv[0]] = kv[1]
+            }
+            print(urlParams);
+        }
+        return true
+    }
+    
     // Custom URL Scheme(ディープリンク)により起動されるメソッド.
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        print("AppDelegate#application")
+        print("AppDelegate#application invoked by Custom URL Schme")
         
         // parse URL parameters
         var urlParams = Dictionary<String, String>.init()
@@ -51,19 +68,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.window?.makeKeyAndVisible()
             return true
             
-        case "ui-to-safari-view":
-            print("AppDelegate#ui-to-safari-view")
-            // SFSafariViewの購入フローを起動
-            
-            // 現在表示中の画面(UIWebViewController)を取得
-            var vc = UIApplication.shared.keyWindow?.rootViewController
-            while (vc!.presentedViewController) != nil {
-                vc = vc!.presentedViewController
-            }
-            
-            // callbackを起動
-            (vc as? UIWebViewController)?.jsCallbackHandler(urlParams["token"]!)
-            return true
+//        case "ui-to-safari-view":
+//            print("AppDelegate#ui-to-safari-view")
+//            // SFSafariViewの購入フローを起動
+//
+//            // 現在表示中の画面(UIWebViewController)を取得
+//            var vc = UIApplication.shared.keyWindow?.rootViewController
+//            while (vc!.presentedViewController) != nil {
+//                vc = vc!.presentedViewController
+//            }
+//
+//            // callbackを起動
+//            (vc as? UIWebViewController)?.jsCallbackHandler(urlParams["token"]!)
+//            return true
 
         default:
             return true
