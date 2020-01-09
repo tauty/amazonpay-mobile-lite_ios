@@ -19,12 +19,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if userActivity.activityType == NSUserActivityTypeBrowsingWeb {
             print(userActivity.webpageURL!)
             // parse URL parameters
+            let query = userActivity.webpageURL!.query!
             var urlParams = Dictionary<String, String>.init()
-            for param in userActivity.webpageURL!.query!.components(separatedBy: "&") {
+            for param in query.components(separatedBy: "&") {
                 let kv = param.components(separatedBy: "=")
+                //urlParams[kv[0]] = kv[1].removingPercentEncoding
                 urlParams[kv[0]] = kv[1]
             }
             print(urlParams);
+            
+            //　windowを生成
+            self.window = UIWindow(frame: UIScreen.main.bounds)
+            //　Storyboardを指定
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            
+            // token check
+            if(isTokenNG(urlParams["token"]!, initial:urlParams["appToken"]!)) {
+                return toError(storyboard);
+            }
+            
+            //----------------------
+            // Thanks画面を起動
+            //----------------------
+
+            // ViewControllerを指定(ThanksControllerのIdentity → Storyboard IDを参照)
+            let vc = storyboard.instantiateViewController(withIdentifier: "ThanksVC")
+            
+            // parameterの設定
+            (vc as? ThanksController)?.query = query
+//            if let tc = vc as? ThanksController {
+//                tc.token = urlParams["token"]!
+//                tc.accessToken = urlParams["accessToken"]!
+//                tc.orderReferenceId = urlParams["orderReferenceId"]!
+//            }
+            
+            // rootViewControllerに入れる
+            self.window?.rootViewController = vc
+            // 表示
+            self.window?.makeKeyAndVisible()
+            return true
         }
         return true
     }
@@ -39,7 +72,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let kv = param.components(separatedBy: "=")
             urlParams[kv[0]] = kv[1]
         }
-        
+
         //　windowを生成
         self.window = UIWindow(frame: UIScreen.main.bounds)
         //　Storyboardを指定
@@ -58,10 +91,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let vc = storyboard.instantiateViewController(withIdentifier: "ThanksVC")
             
             // tokenの設定
-            (vc as? ThanksController)?.token = urlParams["token"]!
-            if(urlParams["accessToken"] != nil) {
-                (vc as? ThanksController)?.accessToken = urlParams["accessToken"]!
-            }
+//            (vc as? ThanksController)?.token = urlParams["token"]!
+//            if(urlParams["accessToken"] != nil) {
+//                (vc as? ThanksController)?.accessToken = urlParams["accessToken"]!
+//            }
             // rootViewControllerに入れる
             self.window?.rootViewController = vc
             // 表示

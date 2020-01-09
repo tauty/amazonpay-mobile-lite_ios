@@ -12,9 +12,8 @@ import SafariServices
 /// 購入完了後に表示されるController.
 /// 受注の情報と取得した購入者情報などを表示する.
 class ThanksController : UIViewController {
-    
-    var token:String?
-    var accessToken:String?
+
+    var query: String?
     var webView: WKWebView!
 
     @IBOutlet weak var topButton: UIButton!
@@ -38,10 +37,9 @@ class ThanksController : UIViewController {
                         
             // 画面を開く
             webView = WKWebView(frame: rect)
-            let query = "?token=" + token! + (accessToken == nil ? "" : "&accessToken=" + accessToken!);
             
-            let path = "thanks";
-            let webUrl = URL(string: Config.shared.baseUrl + path + query)!
+            let path = "purchase";
+            let webUrl = URL(string: Config.shared.baseUrl + path + "?" + query!)!
             var myRequest = URLRequest(url: webUrl)
             myRequest.httpMethod = "POST"
             // myRequest.httpBody = ("token=" + token!).data(using: .utf8)! // Note: WKWebViewにはbodyが消えてしまうバグがあるらしいので、URLパラメータで指定。
