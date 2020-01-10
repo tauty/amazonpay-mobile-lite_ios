@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -23,8 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             var urlParams = Dictionary<String, String>.init()
             for param in query.components(separatedBy: "&") {
                 let kv = param.components(separatedBy: "=")
-                //urlParams[kv[0]] = kv[1].removingPercentEncoding
-                urlParams[kv[0]] = kv[1]
+                urlParams[kv[0]] = kv[1].removingPercentEncoding
             }
             print(urlParams);
             
@@ -39,25 +39,57 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
             
             //----------------------
-            // Thanks画面を起動
+            // 購入処理
             //----------------------
+            let url = URL(string: Config.shared.baseUrl + "purchase_rest")
+            var request = URLRequest(url: url!)
+            // POSTを指定
+            request.httpMethod = "POST"
+            // POSTするデータをBodyとして設定
+            request.httpBody = query.data(using: .utf8)
+            
+            let session = URLSession.shared
+            session.dataTask(with: request) { (data, response, error) in
+                if error == nil, let data = data, let response = response as? HTTPURLResponse {
+                    print("statusCode: \(response.statusCode)")
+                    let result = String(data: data, encoding: .utf8)
+                    if result == "OK" {
+                        //----------------------
+                        // Thanks画面を起動
+                        //----------------------
+                        DispatchQueue.main.async {
+                            // ViewControllerを指定(ThanksControllerのIdentity → Storyboard IDを参照)
+                            let vc = storyboard.instantiateViewController(withIdentifier: "ThanksVC")
+                            
+                            // parameterの設定
+                            (vc as? ThanksController)?.query = "token=" + urlParams["token"]!
+                            
+                            // rootViewControllerに入れる
+                            self.window?.rootViewController = vc
+                            // 表示
+                            self.window?.makeKeyAndVisible()
+                        }
 
-            // ViewControllerを指定(ThanksControllerのIdentity → Storyboard IDを参照)
-            let vc = storyboard.instantiateViewController(withIdentifier: "ThanksVC")
-            
-            // parameterの設定
-            (vc as? ThanksController)?.query = query
-//            if let tc = vc as? ThanksController {
-//                tc.token = urlParams["token"]!
-//                tc.accessToken = urlParams["accessToken"]!
-//                tc.orderReferenceId = urlParams["orderReferenceId"]!
-//            }
-            
-            // rootViewControllerに入れる
-            self.window?.rootViewController = vc
-            // 表示
-            self.window?.makeKeyAndVisible()
-            return true
+                    } else {
+                        DispatchQueue.main.async {
+                            // 現在表示中の画面(WebViewController)を取得
+                            var vc = UIApplication.shared.keyWindow?.rootViewController
+                            var wvc:WebViewController? = nil
+                            while (vc!.presentedViewController) != nil {
+                                if let w = vc as? WebViewController {
+                                    wvc = w;
+                                }
+                                vc = vc!.presentedViewController
+                            }
+                            
+                            // 表示中のSFSafariViewControllerを消す
+                            (vc as? SFSafariViewController)?.dismiss(animated: false, completion: nil)
+                            // callbackを起動
+                            wvc?.jsCallbackHandler(urlParams["token"]!)
+                        }
+                    }
+                }
+            }.resume()
         }
         return true
     }
@@ -68,57 +100,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // parse URL parameters
         var urlParams = Dictionary<String, String>.init()
-        for param in url.query!.components(separatedBy: "&") {
+        let query = url.query!
+        for param in query.components(separatedBy: "&") {
             let kv = param.components(separatedBy: "=")
             urlParams[kv[0]] = kv[1]
         }
 
         //　windowを生成
         self.window = UIWindow(frame: UIScreen.main.bounds)
-        //　Storyboardを指定
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        
-        switch url.host! {
-        case "thanks":
-            // Thanks画面を起動
-            
-            // token check
-            if(isTokenNG(urlParams["token"]!, initial:urlParams["appToken"]!)) {
-                return toError(storyboard);
-            }
-            
-            // ViewControllerを指定(ThanksControllerのIdentity → Storyboard IDを参照)
-            let vc = storyboard.instantiateViewController(withIdentifier: "ThanksVC")
-            
-            // tokenの設定
-//            (vc as? ThanksController)?.token = urlParams["token"]!
-//            if(urlParams["accessToken"] != nil) {
-//                (vc as? ThanksController)?.accessToken = urlParams["accessToken"]!
-//            }
-            // rootViewControllerに入れる
-            self.window?.rootViewController = vc
-            // 表示
-            self.window?.makeKeyAndVisible()
-            return true
-            
-//        case "ui-to-safari-view":
-//            print("AppDelegate#ui-to-safari-view")
-//            // SFSafariViewの購入フローを起動
-//
-//            // 現在表示中の画面(UIWebViewController)を取得
-//            var vc = UIApplication.shared.keyWindow?.rootViewController
-//            while (vc!.presentedViewController) != nil {
-//                vc = vc!.presentedViewController
-//            }
-//
-//            // callbackを起動
-//            (vc as? UIWebViewController)?.jsCallbackHandler(urlParams["token"]!)
-//            return true
 
-        default:
-            return true
+        //-------------------------------
+        // SFSafariViewの購入フローを起動
+        //-------------------------------
+
+        // 現在表示中の画面(WebViewController)を取得
+        var vc = UIApplication.shared.keyWindow?.rootViewController
+        while (vc!.presentedViewController) != nil {
+            vc = vc!.presentedViewController
         }
-        
+
+        // callbackを起動
+        (vc as? WebViewController)?.jsCallbackHandler(urlParams["token"]!)
+        return true
     }
     
     func isTokenNG(_ token:String, initial appToken:String) -> Bool {

@@ -47,6 +47,14 @@ class WebViewController : UIViewController {
             self.view.addSubview(webView)
         }
     }
+    
+    func jsCallbackHandler(_ token:String) {
+        print("WebViewController#jsCallbackHandler")
+        
+        let safariView = SFSafariViewController(url: NSURL(string: Config.shared.baseUrl + "button?token=" + token)! as URL)
+        Holder.appToken = token
+        present(safariView, animated: true, completion: nil)
+    }
 }
 
 extension WebViewController: WKScriptMessageHandler {
@@ -58,11 +66,7 @@ extension WebViewController: WKScriptMessageHandler {
         case "jsCallbackHandler":
             print("jsCallbackHandler")
             if let token = message.body as? String {
-                // SFSafariViewの購入フローを起動
-                let safariView = SFSafariViewController(url: NSURL(string: Config.shared.baseUrl
-                    + "button?token=" + token + "&mode=")! as URL)
-                Holder.appToken = token
-                present(safariView, animated: true, completion: nil)
+                jsCallbackHandler(token)
             }
         default:
             return

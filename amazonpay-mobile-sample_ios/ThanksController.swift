@@ -38,7 +38,7 @@ class ThanksController : UIViewController {
             // 画面を開く
             webView = WKWebView(frame: rect)
             
-            let path = "purchase";
+            let path = "thanks";
             let webUrl = URL(string: Config.shared.baseUrl + path + "?" + query!)!
             var myRequest = URLRequest(url: webUrl)
             myRequest.httpMethod = "POST"
