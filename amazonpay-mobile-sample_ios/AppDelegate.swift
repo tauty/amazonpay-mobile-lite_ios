@@ -54,9 +54,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     print("statusCode: \(response.statusCode)")
                     let result = String(data: data, encoding: .utf8)
                     if result == "OK" {
-                        //----------------------
                         // Thanks画面を起動
-                        //----------------------
                         DispatchQueue.main.async {
                             // ViewControllerを指定(ThanksControllerのIdentity → Storyboard IDを参照)
                             let vc = storyboard.instantiateViewController(withIdentifier: "ThanksVC")
@@ -71,6 +69,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         }
 
                     } else {
+                        // Validation Error 表示
                         DispatchQueue.main.async {
                             // 現在表示中の画面(WebViewController)を取得
                             var vc = UIApplication.shared.keyWindow?.rootViewController
@@ -93,37 +92,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         return true
     }
-    
-    // Custom URL Scheme(ディープリンク)により起動されるメソッド.
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        print("AppDelegate#application invoked by Custom URL Schme")
         
-        // parse URL parameters
-        var urlParams = Dictionary<String, String>.init()
-        let query = url.query!
-        for param in query.components(separatedBy: "&") {
-            let kv = param.components(separatedBy: "=")
-            urlParams[kv[0]] = kv[1]
-        }
-
-        //　windowを生成
-        self.window = UIWindow(frame: UIScreen.main.bounds)
-
-        //-------------------------------
-        // SFSafariViewの購入フローを起動
-        //-------------------------------
-
-        // 現在表示中の画面(WebViewController)を取得
-        var vc = UIApplication.shared.keyWindow?.rootViewController
-        while (vc!.presentedViewController) != nil {
-            vc = vc!.presentedViewController
-        }
-
-        // callbackを起動
-        (vc as? WebViewController)?.jsCallbackHandler(urlParams["token"]!)
-        return true
-    }
-    
     func isTokenNG(_ token:String, initial appToken:String) -> Bool {
         if(appToken != Holder.appToken!) {
             print("appToken doesn't match! app retained token:" + Holder.appToken! + ", conveyed token:" + appToken);
