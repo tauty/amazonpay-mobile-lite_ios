@@ -52,38 +52,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             session.dataTask(with: request) { (data, response, error) in
                 if error == nil, let data = data, let response = response as? HTTPURLResponse {
                     print("statusCode: \(response.statusCode)")
-                    let result = String(data: data, encoding: .utf8)
-                    if result == "OK" {
-                        // Thanks画面を起動
-                        DispatchQueue.main.async {
-                            // ViewControllerを指定(ThanksControllerのIdentity → Storyboard IDを参照)
-                            let vc = storyboard.instantiateViewController(withIdentifier: "ThanksVC")
-                            
-                            // parameterの設定
-                            (vc as? ThanksController)?.query = "token=" + urlParams["token"]!
-                            
-                            // rootViewControllerに入れる
-                            self.window?.rootViewController = vc
-                            // 表示
-                            self.window?.makeKeyAndVisible()
+                    
+                    // 現在表示中の画面(WebViewController)を取得
+                    var vc = UIApplication.shared.keyWindow?.rootViewController
+                    var wvc:WebViewController? = nil
+                    while (vc!.presentedViewController) != nil {
+                        if let w = vc as? WebViewController {
+                            wvc = w;
                         }
+                        vc = vc!.presentedViewController
+                    }
 
-                    } else {
-                        // Validation Error 表示
-                        DispatchQueue.main.async {
-                            // 現在表示中の画面(WebViewController)を取得
-                            var vc = UIApplication.shared.keyWindow?.rootViewController
-                            var wvc:WebViewController? = nil
-                            while (vc!.presentedViewController) != nil {
-                                if let w = vc as? WebViewController {
-                                    wvc = w;
-                                }
-                                vc = vc!.presentedViewController
-                            }
-                            
-                            // 表示中のSFSafariViewControllerを消す
-                            (vc as? SFSafariViewController)?.dismiss(animated: false, completion: nil)
-                            // callbackを起動
+                    let result = String(data: data, encoding: .utf8)
+                    DispatchQueue.main.async {
+                        // 表示中のSFSafariViewControllerを消す
+                        (vc as? SFSafariViewController)?.dismiss(animated: false, completion: nil)
+                        
+                        if result == "OK" {
+                            // Thanks画面を起動
+                            wvc?.showThanks(urlParams["token"]!)
+                        } else {
+                            // Validation Error 表示
                             wvc?.jsCallbackHandler(urlParams["token"]!)
                         }
                     }

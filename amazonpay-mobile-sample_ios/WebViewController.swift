@@ -55,6 +55,14 @@ class WebViewController : UIViewController {
         Holder.appToken = token
         present(safariView, animated: true, completion: nil)
     }
+    
+    func showThanks(_ token:String) {
+        let webUrl = URL(string: Config.shared.baseUrl + "thanks?token=" + token)!
+        var myRequest = URLRequest(url: webUrl)
+        myRequest.httpMethod = "POST"
+        // myRequest.httpBody = ("token=" + token!).data(using: .utf8)! // Note: WKWebViewにはbodyが消えてしまうバグがあるらしいので、URLパラメータで指定。
+        webView.load(myRequest)
+    }
 }
 
 extension WebViewController: WKScriptMessageHandler {
