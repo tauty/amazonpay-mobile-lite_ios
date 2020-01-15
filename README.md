@@ -15,7 +15,13 @@ Apple iOS バージョン11.2以降: Safari Mobile 11以降
 ## プロジェクトのOpenとサンプルアプリの起動
 本プロジェクトは、Mac上の[Xcode](https://developer.apple.com/jp/xcode/)で開きます。そのほかの環境での開き方は、ここでは扱いません。  
 ※ ここではversion 10.2.1を使用しています。  
-まずはXcodeを立ち上げます。  
+
+まずは、本プロジェクトをcloneしてください。  
+```
+git clone https://github.com/tauty/amazonpay-mobile-sample_ios.git
+```
+
+次にXcodeを立ち上げます。  
 ![androidstudio-welcome](img/xcode_open.png)
 「Open another project」で、cloneしたプロジェクトを選択して、「Open」  
 プロジェクトが開いたら、Menuの「Product」→「Run」か、画面上部の「Run」ボタンより、applicationを起動してください。
