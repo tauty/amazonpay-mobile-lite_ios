@@ -73,7 +73,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                             wvc?.showThanks(urlParams["token"]!)
                         } else {
                             // Validation Error 表示
-                            wvc?.jsCallbackHandler(urlParams["token"]!)
+                            let jsonData = NSDictionary(dictionary: ["token": urlParams["token"]!, "appKey": Holder.appKey!])
+                            wvc?.jsCallbackHandler(jsonData)
+//                            var jsonDic = Dictionary<String, Any>()
+//                            jsonDic["token"] = urlParams["token"]!
+//                            jsonDic["appKey"] = Holder.appKey
+//                            do {
+//                                let jsonData = try JSONSerialization.data(withJSONObject: jsonDic)
+//                                wvc?.jsCallbackHandler(String(bytes: jsonData, encoding: .utf8)!)
+//                            } catch {
+//                                print(error)
+//                            }
                         }
                     }
                 }

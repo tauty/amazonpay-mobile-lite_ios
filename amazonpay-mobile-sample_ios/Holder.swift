@@ -9,4 +9,5 @@ import Foundation
 
 struct Holder {
     static var appToken: String? = nil
+    static var appKey: String? = nil
 }

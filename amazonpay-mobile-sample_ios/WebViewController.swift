@@ -48,12 +48,23 @@ class WebViewController : UIViewController {
         }
     }
     
-    func jsCallbackHandler(_ token:String) {
+    func jsCallbackHandler(_ data:NSDictionary) {
         print("WebViewController#jsCallbackHandler")
         
-        let safariView = SFSafariViewController(url: NSURL(string: Config.shared.baseUrl + "button?token=" + token)! as URL)
-        Holder.appToken = token
-        present(safariView, animated: true, completion: nil)
+//        do {
+//            let tokenData: Data =  data.data(using: String.Encoding.utf8)!
+//            let jsonData = try JSONSerialization.jsonObject(with: tokenData, options: JSONSerialization.ReadingOptions.allowFragments)
+//            let json = jsonData as! NSDictionary
+            let token = data["token"] as! String
+            let appKey = data["appKey"] as! String
+            
+            let safariView = SFSafariViewController(url: NSURL(string: Config.shared.baseUrl + "button?token=" + token)! as URL)
+            Holder.appToken = token
+            Holder.appKey = appKey
+            present(safariView, animated: true, completion: nil)
+//        } catch {
+//            print(error)
+//        }
     }
     
     func showThanks(_ token:String) {
@@ -73,8 +84,11 @@ extension WebViewController: WKScriptMessageHandler {
         switch message.name {
         case "jsCallbackHandler":
             print("jsCallbackHandler")
-            if let token = message.body as? String {
-                jsCallbackHandler(token)
+//            print(message.body)
+//            print(String(describing: type(of: message.body)))
+            
+            if let data = message.body as? NSDictionary {
+                jsCallbackHandler(data)
             }
         default:
             return
