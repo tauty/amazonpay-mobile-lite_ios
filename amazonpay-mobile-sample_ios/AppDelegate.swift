@@ -20,7 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if userActivity.activityType == NSUserActivityTypeBrowsingWeb {
             print(userActivity.webpageURL!)
             // parse URL parameters
-            let query = userActivity.webpageURL!.query!
+            let query = userActivity.webpageURL!.query! + "&appKey=" + Holder.appKey!
             var urlParams = Dictionary<String, String>.init()
             for param in query.components(separatedBy: "&") {
                 let kv = param.components(separatedBy: "=")
@@ -75,15 +75,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                             // Validation Error 表示
                             let jsonData = NSDictionary(dictionary: ["token": urlParams["token"]!, "appKey": Holder.appKey!])
                             wvc?.jsCallbackHandler(jsonData)
-//                            var jsonDic = Dictionary<String, Any>()
-//                            jsonDic["token"] = urlParams["token"]!
-//                            jsonDic["appKey"] = Holder.appKey
-//                            do {
-//                                let jsonData = try JSONSerialization.data(withJSONObject: jsonDic)
-//                                wvc?.jsCallbackHandler(String(bytes: jsonData, encoding: .utf8)!)
-//                            } catch {
-//                                print(error)
-//                            }
                         }
                     }
                 }
